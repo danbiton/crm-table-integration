@@ -37,6 +37,8 @@ export class ContactService {
       // const accountId = "0196e7ec-f617-7001-8666-1aecd515ffc8"
       // const accountId = "0196be43-d44b-7000-8417-983b288d00d6"
       // const accountId =  "11ed6655-d1b3-643e-afdb-81dbbb010a00"
+      this.logger.log("ac: ", accountId)
+      this.logger.log("accountId: ", accountId)
 
       const contactsByAccount = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}?$filter=accountId eq '${accountId}'`,
         {
