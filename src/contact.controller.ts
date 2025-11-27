@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -13,8 +13,8 @@ export class ContactController {
     return this.contactService.getAccountId()
   }
   @Get('contacts')
-  async getContactsByAccount() {
-    return this.contactService.getContactsByAccount()
+  async getContactsByAccount(@Query('accountId') accountId: string) {
+    return this.contactService.getContactsByAccount(accountId)
   }
   @Post('upload-id')
   @UseInterceptors(FileInterceptor('file'))
