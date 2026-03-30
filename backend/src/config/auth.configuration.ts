@@ -12,6 +12,9 @@ export class AuthConfiguration {
     @Value('BASE_URL_SAP')
     baseUrlSap: string
 
+    @Value('BASE_URL_LINK')
+    baseUrlLink: string
+
     @Value('URL_CONTACT')
     urlContact: string
 

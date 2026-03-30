@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { AuthConfiguration } from './config/auth.configuration';
+import { Response } from "express"
 import * as fs from "fs"
+import archiver from "archiver"
 
 @Injectable()
 export class ContactService {
@@ -9,9 +11,9 @@ export class ContactService {
 
   constructor(private readonly authConfig: AuthConfiguration) { }
 
-  async getAccountId() {
+  async getAccountId(accountId: string) {
     try {
-      const res = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlAccount}?$filter=formattedName eq 'Arral Energy DE'`, {
+      const res = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlAccount}?$filter=id eq ${accountId}`, {
         auth: {
           username: this.authConfig.user,
           password: this.authConfig.password
@@ -20,57 +22,60 @@ export class ContactService {
       }
 
       )
-      return res.data
+      return res.data.value
 
     } catch (error: any) {
       this.logger.log("failed")
 
     }
   }
-  
+
   async getContactsByAccount(accountId: string) {
     try {
-      // const getSpesificAccount = await this.getAccountId()
-      // const accountId = getSpesificAccount.Value[0].id
-      // this.logger.log("accountId", accountId)
+      const url = `${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}?$filter=isContactPersonFor/accountId eq '${accountId}'`;
+      // this.logger.log("field:", sortField)
+      // this.logger.log("direction:", sortDir)
+      // if (sortField === 'formattedName' && sortDir) {
+      //   url += `&$orderby=${sortField} ${sortDir}`;
+      // }
+      // if (sortField && sortField !== 'formattedName' && sortDir) {
+      //   url += `&$orderby=extensions/${sortField} ${sortDir}`
+      // }
 
-      // const accountId = "0196e7ec-f617-7001-8666-1aecd515ffc8"
-      // const accountId = "0196be43-d44b-7000-8417-983b288d00d6"
-      // const accountId =  "11ed6655-d1b3-643e-afdb-81dbbb010a00"
-      this.logger.log("ac: ", accountId)
-      this.logger.log("accountId: ", accountId)
+      this.logger.log("url:", url)
 
-      const contactsByAccount = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}?$filter=accountId eq '${accountId}'`,
-        {
-          auth: {
-            username: this.authConfig.user,
-            password: this.authConfig.password
-          }
-
+      const contactsByAccount = await axios.get(url, {
+        auth: {
+          username: this.authConfig.user,
+          password: this.authConfig.password
         }
-      )
-      // להוסיף שדה hasId 
-      //formattedName שם מלא בשדה של האיש קשר
-      return contactsByAccount.data.value
+      });
+      const residents = contactsByAccount.data.value.filter(contact => contact?.functionalTitle === '007')
+      // console.log("totalResidents: ", residents)
 
-
-    }
-    catch (error: any) {
-      this.logger.log("Failed")
+      return residents;
+    } catch (error: any) {
+      this.logger.log("Failed");
     }
   }
-  
-  async sendFileToSAP(file: any, contactId: string) {
-    
+
+  async sendFileToSAP(file: any, contactId: string, field: string, zIdNumber: string) {
+
+    this.logger.log("file: ", file)
+    const fileName = `${file.originalname.split(".")[0]}_${zIdNumber}.${file.originalname.split(".")[1]}`
+    this.logger.log("fileName:", fileName)
+    const ext = file.originalname.split(".")[0]
     try {
       const res = await axios.post(
         `${this.authConfig.baseUrlSap}/document-service/documents`,
         {
-          isSelected: false,
-          isDisplayDocument: true,
-          fileName: file.originalname,
+          // isSelected: false,
+          // isDisplayDocument: true,
+          fileName: fileName,
           category: "DOCUMENT",
-          type: "10001"
+          type: "10001",
+          title: `${field}.${ext}`
+
         },
         {
           auth: {
@@ -82,19 +87,20 @@ export class ContactService {
           }
         }
       );
-      this.logger.log("res:", res.data)
+      // this.logger.log("res:", res.data)
       const uploadUrl = res.data.value.uploadUrl
-      this.logger.log("uploadUrl:", uploadUrl)
+      // this.logger.log("uploadUrl:", uploadUrl)
       const attachment = res.data.value
+      this.logger.log("attachment: ", attachment)
 
-     await this.uploadFileToSAP(file, uploadUrl);
-     fs.unlinkSync(file.path); 
+      await this.uploadFileToSAP(file, uploadUrl);
+      fs.unlinkSync(file.path);
 
 
-    
-    const linkResponse = await this.linkAttachmentToContact(contactId, attachment.id);
 
-    return { success: true, attachmentId: attachment.id, linkResponse};
+      const linkResponse = await this.linkAttachmentToContact(contactId, attachment, field);
+
+      return { success: true, field, attachmentId: attachment.id, linkResponse };
     } catch (error: any) {
       this.logger.error("failed request", error.response?.data || error.message)
     }
@@ -112,51 +118,125 @@ export class ContactService {
       return response
 
     }
-    catch(error:any){
+    catch (error: any) {
       this.logger.error("failed")
     }
-    
+
 
   }
-async linkAttachmentToContact(contactId: string, attachmentId: string) {
-  try {
-    const getEtag = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}`,
-       {
-        auth: {
-          username: this.authConfig.user,
-          password: this.authConfig.password,
+  async linkAttachmentToContact(contactId: string, attachment: any, field: string) {
+    try {
+      const getEtag = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}`,
+        {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password,
+          }
         }
-      }
-    )
-    const etag = getEtag.headers['etag'];
-    this.logger.log("etag:", etag)
-    this.logger.log("headers:", getEtag)
-    const patchRes = await axios.patch(
-      `${this.authConfig.baseUrlSap}/contact-person-service/contactPersons/${contactId}`,
-      {
-        attachments: [
-          { id: attachmentId}
-        ],
-        extensions: { TZ: true }
-      },
-      {
-        headers: {
-          "If-Match": etag,
-           "Content-Type": "application/merge-patch+json"
+      )
+      // this.logger.log("")
+      const etag = getEtag.headers['etag'];
+      this.logger.log("etag:", etag)
+      // this.logger.log("headers:", getEtag)
+      const patchRes = await axios.patch(
+        `${this.authConfig.baseUrlSap}/contact-person-service/contactPersons/${contactId}`,
+        {
+          attachments: [
+            { id: attachment.id }
+          ],
+          extensions: { [field]: "1" }
         },
-        auth: {
-          username: this.authConfig.user,
-          password: this.authConfig.password
+        {
+          headers: {
+            "If-Match": etag,
+            "Content-Type": "application/merge-patch+json"
+          },
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          }
         }
-      }
-    );
+      );
 
-    return patchRes.data;
+      return patchRes.data;
 
-  } catch (error) {
-    this.logger.error("failed to link attachment", error.response?.data || error.message);
-    throw error;
+    } catch (error) {
+      this.logger.error("failed to link attachment", error.response?.data || error.message);
+      throw error;
+    }
   }
-}
+  // downloadAllFiles(contactId: string) {
+  //   const url = `${this.authConfig.baseUrlLink}/go/detail/mdcontact?nodeid=${contactId}`
+  //    return { url }
+   
+  // }
 
+
+
+  async deleteFileAndUpdateField(contactId: string, field: string) {
+    try {
+      const contact = await axios.get(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}`,
+        {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          }
+        }
+      )
+      // this.logger.log("contact:", contact.data.value)
+
+      const attachments = contact.data.value.attachments
+      // this.logger.log("attacments:", attachments)
+      const foundAttachment = attachments.find((file: any) => file.title.split(".")[0] === field)
+      this.logger.log("foundAttachment: ", foundAttachment)
+      const attachmentId = foundAttachment.id
+
+
+
+      const res = await axios.delete(`${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}/attachments/${attachmentId}`,
+        {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          }
+        }
+      )
+      const updatedContact = await axios.get(
+        `${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}`,
+        {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          }
+        }
+      )
+
+      const newEtag = updatedContact.headers['etag']
+
+      const updateField = await axios.patch(
+        `${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}/${contactId}`,
+        {
+          extensions: { [field]: "0" }
+        },
+        {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          },
+          headers: {
+            "If-Match": newEtag,
+            "Content-Type": "application/merge-patch+json"
+          }
+        }
+      )
+      console.log("updateField: ", updateField.data)
+      return { success: true, message: "the file was deleted successfully" }
+
+    }
+    catch (error: any) {
+      console.log("error:", error)
+    }
+
+
+  }
 }
