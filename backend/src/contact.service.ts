@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { AuthConfiguration } from './config/auth.configuration';
-import { Response } from "express"
+
 import * as fs from "fs"
-import archiver from "archiver"
+
 
 @Injectable()
 export class ContactService {
@@ -30,41 +30,64 @@ export class ContactService {
     }
   }
 
-  async getContactsByAccount(accountId: string) {
+  async getContactsByAccount(accountId: string): Promise<any[]> {
+    const baseUrl = this.authConfig.baseUrlSap;
+    const contactsUrl = this.authConfig.urlContact;
+
+    let allContacts: any[] = [];
+    const top = 999;
+    let skip = 0;
+    let hasMore = true;
+
     try {
-      const url = `${this.authConfig.baseUrlSap}/${this.authConfig.urlContact}?$filter=isContactPersonFor/accountId eq '${accountId}'`;
-      // this.logger.log("field:", sortField)
-      // this.logger.log("direction:", sortDir)
-      // if (sortField === 'formattedName' && sortDir) {
-      //   url += `&$orderby=${sortField} ${sortDir}`;
-      // }
-      // if (sortField && sortField !== 'formattedName' && sortDir) {
-      //   url += `&$orderby=extensions/${sortField} ${sortDir}`
-      // }
+      while (hasMore) {
 
-      this.logger.log("url:", url)
+        const url =
+          `${baseUrl}/${contactsUrl}` +
+          `?$filter=isContactPersonFor/accountId eq '${accountId}'` +
+          `&$skip=${skip}` +
+          `&$top=${top}`;
 
-      const contactsByAccount = await axios.get(url, {
-        auth: {
-          username: this.authConfig.user,
-          password: this.authConfig.password
+        this.logger.log("url:", url);
+
+        const results = await axios.get<{ value: any[] }>(url, {
+          auth: {
+            username: this.authConfig.user,
+            password: this.authConfig.password
+          }
+        });
+
+        const data = results.data.value;
+
+        allContacts = allContacts.concat(data);
+
+        if (data.length < top) {
+          hasMore = false;
+        } else {
+          skip += top;
         }
-      });
-      const residents = contactsByAccount.data.value.filter(contact => contact?.functionalTitle === '007')
-      // console.log("totalResidents: ", residents)
+      }
+
+      this.logger.log("Total contacts fetched:", allContacts.length);
+
+      const residents = allContacts.filter(
+        contact => contact?.functionalTitle === '007'
+      );
 
       return residents;
-    } catch (error: any) {
-      this.logger.log("Failed");
+
+    } catch (error) {
+      this.logger.error("Error fetching contacts", error);
+      throw error;
     }
   }
 
-  async sendFileToSAP(file: any, contactId: string, field: string, zIdNumber: string) {
+  async sendFileToSAP(file: any, contactId: string, field: string, fieldLabel: string, zIdNumber: string) {
 
     this.logger.log("file: ", file)
     const fileName = `${file.originalname.split(".")[0]}_${zIdNumber}.${file.originalname.split(".")[1]}`
     this.logger.log("fileName:", fileName)
-    const ext = file.originalname.split(".")[0]
+    const ext = file.originalname.split(".")[1]
     try {
       const res = await axios.post(
         `${this.authConfig.baseUrlSap}/document-service/documents`,
@@ -74,7 +97,7 @@ export class ContactService {
           fileName: fileName,
           category: "DOCUMENT",
           type: "10001",
-          title: `${field}.${ext}`
+          title: `${fieldLabel}.${ext}`
 
         },
         {
@@ -100,7 +123,7 @@ export class ContactService {
 
       const linkResponse = await this.linkAttachmentToContact(contactId, attachment, field);
 
-      return { success: true, field, attachmentId: attachment.id, linkResponse };
+      return { success: true, fieldLabel, attachmentId: attachment.id, linkResponse };
     } catch (error: any) {
       this.logger.error("failed request", error.response?.data || error.message)
     }
@@ -168,7 +191,7 @@ export class ContactService {
   // downloadAllFiles(contactId: string) {
   //   const url = `${this.authConfig.baseUrlLink}/go/detail/mdcontact?nodeid=${contactId}`
   //    return { url }
-   
+
   // }
 
 

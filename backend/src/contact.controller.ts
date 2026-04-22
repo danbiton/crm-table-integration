@@ -23,15 +23,17 @@ export class ContactController {
   async uploadId(@UploadedFile() file: Express.Multer.File,
     @Body('contactId') contactId: string,
     @Body('field') field: string,
+    @Body('fieldLabel') fieldLabel: string,
     @Body('zIdNumber') zIdNumber: string
   ) {
     this.logger.log("file:", file)
     this.logger.log("contactId:", contactId)
     this.logger.log("field:", field)
+    this.logger.log("fieldLabel:", fieldLabel)
     this.logger.log("zIdNumber:", zIdNumber)
 
 
-    return this.contactService.sendFileToSAP(file, contactId, field, zIdNumber)
+    return this.contactService.sendFileToSAP(file, contactId, field, fieldLabel, zIdNumber)
 
   }
   @Get('delete-file/:contactId/:field')
