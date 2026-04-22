@@ -14,7 +14,7 @@ interface SortableHeaderProps {
 
 export default function SortableHeader({ label, field, sortField, sortDirection, onSort }: SortableHeaderProps) {
     return (
-        <div className="flex items-center justify-center gap-1 select-none">
+        <div className="flex items-center justify-center gap-1 select-none text-[10px]">
             {label}
             <div className="flex gap-0.5">
                 <FaArrowUp

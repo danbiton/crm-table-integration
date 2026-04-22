@@ -31,6 +31,7 @@ export interface Contact {
         Z_Cancel_Prev_Agreement?: string;
         Z_Agreement_Addendum?: string;
         Z_Upgrade_Downgrade_Agreement?: string;
+        Z_extra_documents?: boolean;
         
 
     };
