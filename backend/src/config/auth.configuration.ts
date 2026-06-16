@@ -4,20 +4,29 @@ import { Configuration, Value } from '@itgorillaz/configify'
 export class AuthConfiguration {
 
     @Value('USER')
-    user: string
+    user!: string
 
     @Value('PASSWORD_SAP')
-    password: string
+    password!: string
 
     @Value('BASE_URL_SAP')
-    baseUrlSap: string
+    baseUrlSap!: string
 
     @Value('BASE_URL_LINK')
-    baseUrlLink: string
+    baseUrlLink!: string
 
     @Value('URL_CONTACT')
-    urlContact: string
+    urlContact!: string
 
     @Value('URL_ACCOUNT')
-    urlAccount: string
+    urlAccount!: string
+
+    @Value('AZURE_STORAGE_ACCOUNT')
+    azureStorageAccount!: string
+
+    @Value('AZURE_STORAGE_CONTAINER')
+    azureContainer!: string
+
+    @Value('AZURE_SAS_TOKEN')
+    azureSasToken!: string
 }
