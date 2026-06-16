@@ -138,11 +138,12 @@ export class ContactController {
     });
     res.send(buffer);
   }
-  // @Get('download-all')
-  // async downloadAll(
-  //   @Query("contactId") contactId: string
-  // ) {
-
-  //   return this.contactService.downloadAllFiles(contactId);
-  // }
+  @Get('update-field/:contactId/:field/:value')
+  async updateField(
+    @Param('contactId') contactId: string,
+    @Param('field') field: string,
+    @Param('value') value: '0' | '1',
+  ) {
+    return this.contactService.updateContactField(contactId, field, value);
+  }
 }
