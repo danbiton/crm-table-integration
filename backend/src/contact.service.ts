@@ -187,29 +187,7 @@ export class ContactService {
 
   // }
 
-  //new azur
-  // ----- חדש: בניית נתיב ה-blob (מקור אמת אחד) -----
-  // private async buildBlobPath(
-  //   accountId: string,
-  //   contactId: string,
-  //   documentName: string,
-  // ): Promise<string> {
-  //   const account = await this.getAccountId(accountId);
-
-  //   const accName = account[0].formattedName;
-  //   const contactName = account[0].hasContactPersons.find(
-  //     (contact: any) => contact.contactId === contactId,
-  //   ).contactFormattedName;
-
-  //   const accountIdAndName = `${accountId}_${accName}`;
-  //   const safeProject = encodeURIComponent(accountIdAndName);
-
-  //   const contactIdAndName = `${contactId}_${contactName}`;
-  //   const safeResident = encodeURIComponent(contactIdAndName);
-
-  //   const safeDocName = encodeURIComponent(documentName);
-  //   return `${safeProject}/${safeResident}/${safeDocName}`;
-  // }
+ 
   private async buildBlobPath(
     accountId: string,
     contactId: string,
@@ -382,7 +360,7 @@ export class ContactService {
   //       }
   //     )
   //     // this.logger.log("contact:", contact.data.value)
-
+  
   //     const attachments = contact.data.value.attachments
   //     // this.logger.log("attacments:", attachments)
   //     const foundAttachment = attachments.find((file: any) => file.title.split(".")[0] === field)

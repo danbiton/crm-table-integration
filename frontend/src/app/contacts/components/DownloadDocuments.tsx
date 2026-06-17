@@ -5,8 +5,8 @@ import { useState, useMemo } from "react";
 type FilterType = "all" | "resident" | "plot" | "documentType";
 
 interface Option {
-  value: string;   // מה שנשלח ל-backend
-  label: string;   // מה שמוצג למשתמש
+  value: string;   
+  label: string;  
 }
 
 interface DownloadDocumentsProps {
@@ -27,7 +27,7 @@ export default function DownloadDocuments({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Option | null>(null);
 
-  // בוחר איזו רשימה להציג לפי סוג הסינון
+ 
   const options = useMemo<Option[]>(() => {
     if (filterType === "resident") return residents;
     if (filterType === "plot") return plots;
@@ -35,7 +35,7 @@ export default function DownloadDocuments({
     return [];
   }, [filterType, residents, plots, documentTypes]);
 
-  // סינון לפי החיפוש
+  
   const filtered = useMemo(
     () =>
       options.filter((o) =>
@@ -75,7 +75,7 @@ export default function DownloadDocuments({
 
   return (
     <div className="relative inline-block text-right" dir="rtl">
-      {/* כפתור ראשי */}
+    
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors"
@@ -87,7 +87,7 @@ export default function DownloadDocuments({
         הורדת מסמכים
       </button>
 
-      {/* פאנל נפתח */}
+      
       {open && (
         <div className="absolute z-50 mt-2 right-0 w-80 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
           {/* שלב 1: בחירת סוג סינון */}
@@ -110,10 +110,10 @@ export default function DownloadDocuments({
             </div>
           </div>
 
-          {/* שלב 2: רשימה עם חיפוש */}
+         
           {filterType && (
             <div className="p-3">
-              {/* שדה חיפוש */}
+             
               <input
                 type="text"
                 value={search}
@@ -123,7 +123,7 @@ export default function DownloadDocuments({
                 autoFocus
               />
 
-              {/* רשימה גלילה */}
+            
               <div className="max-h-56 overflow-y-auto">
                 {filtered.length === 0 ? (
                   <div className="text-center text-sm text-slate-400 py-4">
@@ -146,7 +146,7 @@ export default function DownloadDocuments({
                 )}
               </div>
 
-              {/* כפתור הורדה */}
+             
               <button
                 onClick={handleDownload}
                 disabled={!selected}
