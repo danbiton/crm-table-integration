@@ -68,7 +68,7 @@ export class ContactService {
       this.logger.log('Total contacts fetched:', allContacts.length);
 
       const residents = allContacts.filter(
-        (contact) => contact?.functionalTitle === '007',
+        (contact) => contact?.functionalTitle === '0007',
       );
 
       return residents;
