@@ -228,7 +228,8 @@ export default function ContactsPage() {
     label: c.formattedName,
   }));
 
-  // רשימת חלקות — ערכים ייחודיים של Z_Plot
+  
+  
   const plotOptions = [
     ...new Set(
       contacts.map((c) => c.extensions?.Z_Plot).filter(Boolean) as string[],
