@@ -9,7 +9,7 @@ export interface Contact {
         Z_SubPlot?: string;
         Z_Is_Senior?: string;
         Z_ID_Number?: string;
-        Z_Agreement_Signed?: string;
+        Z_Signed?: string;
         Z_Joint_Property_Share?: string;
         Z_Signing_Date?: string;
         Z_ID_File?: string;

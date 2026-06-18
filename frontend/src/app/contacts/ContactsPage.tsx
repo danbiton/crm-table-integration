@@ -66,7 +66,7 @@ export default function ContactsPage() {
 
   //signaturePercentage
   const signatureLen = filteredContacts.filter(
-    (contact) => contact.extensions?.Z_Agreement_Signed === "1",
+    (contact) => contact.extensions?.Z_Signed === "1",
   ).length;
   const signaturePercentage = (
     (signatureLen / filteredContacts.length) *
@@ -255,7 +255,7 @@ export default function ContactsPage() {
       const total = residentsInPlot.length;
 
       const signedResidents = residentsInPlot.filter(
-        (c) => c.extensions?.Z_Agreement_Signed === "1",
+        (c) => c.extensions?.Z_Signed === "1",
       );
       const signed = signedResidents.length;
 
@@ -281,7 +281,7 @@ export default function ContactsPage() {
     const newValue = currentValue === "1" ? "0" : "1";
     try {
       await axios.get(
-        `${API_URL}/update-field/${contactId}/Z_Agreement_Signed/${newValue}`,
+        `${API_URL}/update-field/${contactId}/Z_Signed/${newValue}`,
       );
       await fetchContacts();
     } catch (error) {
@@ -297,7 +297,7 @@ export default function ContactsPage() {
         חלקה: contact.extensions?.Z_Plot || "",
         "תת חלקה": contact.extensions?.Z_SubPlot || "",
         "חתום על הסכם":
-          contact.extensions?.Z_Agreement_Signed === "1" ? "כן" : "לא",
+          contact.extensions?.Z_Signed === "1" ? "כן" : "לא",
         קשיש: contact.extensions?.Z_Is_Senior === "1" ? "כן" : "לא",
       };
 
@@ -551,7 +551,7 @@ export default function ContactsPage() {
                   <th className="px-3 py-3 text-center text-xs font-bold text-white">
                     <SortableHeader
                       label="חתום על הסכם"
-                      field="Z_Agreement_Signed"
+                      field="Z_Signed"
                       sortField={sortField}
                       sortDirection={sortDirection}
                       onSort={handleSort}
@@ -713,17 +713,17 @@ export default function ContactsPage() {
                             onClick={() =>
                               updateSignedField(
                                 contact.id,
-                                contact.extensions?.Z_Agreement_Signed,
+                                contact.extensions?.Z_Signed,
                               )
                             }
                             className={`px-2.5 py-1 rounded text-xs font-semibold cursor-pointer transition-colors ${
-                              contact.extensions?.Z_Agreement_Signed === "1"
+                              contact.extensions?.Z_Signed === "1"
                                 ? "bg-green-100 text-green-700 hover:bg-green-200"
                                 : "bg-red-100 text-red-700 hover:bg-red-200"
                             }`}
                             title="לחץ לשינוי"
                           >
-                            {contact.extensions?.Z_Agreement_Signed === "1"
+                            {contact.extensions?.Z_Signed === "1"
                               ? "כן"
                               : "לא"}
                           </button>
