@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { AppShell } from "../ui/AppShell";
 import "./globals.css";
+import { Toaster } from "sonner";
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,7 +16,9 @@ export default function RootLayout({ children }: {
     <html lang="en">
       <body className="font-sans">
         <AppShell>{children}</AppShell>
+        <Toaster position="top-center" dir="rtl" richColors closeButton />
       </body>
     </html>
   );
 }
+

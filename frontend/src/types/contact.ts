@@ -5,7 +5,7 @@ export interface Contact {
     functionalTitle?: string;
     extensions?: {
         Z_Block?: string;
-        Z_Plot?: string;
+        Z_Part?: string;
         Z_SubPlot?: string;
         Z_Is_Senior?: string;
         Z_ID_Number?: string;

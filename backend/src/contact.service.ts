@@ -31,6 +31,7 @@ export class ContactService {
   async getContactsByAccount(accountId: string): Promise<any[]> {
     const baseUrl = this.authConfig.baseUrlSap;
     const contactsUrl = this.authConfig.urlContact;
+    this.logger.log("accountId: ", accountId)
 
     let allContacts: any[] = [];
     const top = 999;
@@ -539,7 +540,7 @@ export class ContactService {
   async downloadByPlot(accountId: string, plot: string): Promise<Buffer> {
     const allContacts = await this.getContactsByAccount(accountId);
     const contactsInPlot = allContacts.filter(
-      (c) => c?.extensions?.Z_Plot === plot,
+      (c) => c?.extensions?.Z_Part === plot,
     );
 
     if (contactsInPlot.length === 0) {

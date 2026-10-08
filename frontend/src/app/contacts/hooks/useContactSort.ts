@@ -14,8 +14,8 @@ export function useContactSort(
                 const blockB = Number(b.extensions?.Z_Block) || 0;
                 if (blockA !== blockB) return blockA - blockB;
 
-                const plotA = Number(a.extensions?.Z_Plot) || 0;
-                const plotB = Number(b.extensions?.Z_Plot) || 0;
+                const plotA = Number(a.extensions?.Z_Part) || 0;
+                const plotB = Number(b.extensions?.Z_Part) || 0;
                 if (plotA !== plotB) return plotA - plotB;
 
                 const subPlotA = Number(a.extensions?.Z_SubPlot) || 0;
